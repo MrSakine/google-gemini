@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="appTitle">Guide Interactif des Études en Charia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Accents -->
+    <!-- Application Structure Plan: The SPA is structured around a user-centric, task-oriented flow rather than mirroring the report's linear structure. The key architectural components are: 1. A global navigation header with a language switcher. 2. A main content area with switchable sections for 'Accueil', 'Explorer', 'Comparer', 'Bourses', 'Carrières', and 'Conseils'. This allows users to jump to the information they need. 3. The 'Explorer' section uses a region-to-country filtering system, presenting universities in a card-based layout for scannability. Clicking a card opens a modal for a deep dive, preventing page reloads and keeping the user in context. 4. A dynamic 'Comparer' tool lets users select institutions and view their key attributes side-by-side in a table and a visual chart. This structure was chosen because it empowers users to actively discover and compare information based on their own criteria (geography, cost), which is more engaging and effective for decision-making than passive reading. -->
+    <!-- Visualization & Content Choices: 1. University Data (Goal: Organize/Inform) -> Interactive Cards & Modals (HTML/JS) -> On-click interaction -> Justification: Provides a clean overview and detailed on-demand info without cluttering the UI. 2. Tuition Fees (Goal: Compare) -> Bar Chart (Chart.js/Canvas) -> Dynamic updates based on user selection -> Justification: Offers immediate visual comparison of costs, which is more impactful than numbers in a table. 3. Program Comparison (Goal: Compare) -> Dynamic HTML Table (JS) -> Checkbox selection updates table -> Justification: Allows flexible, user-driven comparison of multiple programs. 4. Career Paths (Goal: Organize) -> Tabbed Content (HTML/JS) -> Click to switch between 'Traditional' and 'Modern' -> Justification: Clearly segments career options as highlighted in the report. 5. Regional Exploration (Goal: Navigate/Filter) -> Button-based filters (HTML/JS) -> Click to filter countries -> Justification: Simple, intuitive navigation without the overhead of a full map library. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .amiri-font {
+            font-family: 'Amiri', serif;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link.active {
+            color: #C0844D;
+            border-bottom-color: #C0844D;
+        }
+        .lang-btn.active {
+            background-color: #C0844D;
+            color: white;
+        }
+        .modal {
+            display: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+        html[dir="rtl"] * {
+           letter-spacing: normal !important;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app">
+        <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-40">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-800" data-translate="appTitle">Guide des Études en Charia</h1>
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <div id="language-switcher" class="flex items-center bg-gray-100 rounded-full p-1 text-sm">
+                            <button class="lang-btn px-3 py-1 rounded-full" data-lang="fr">FR</button>
+                            <button class="lang-btn px-3 py-1 rounded-full" data-lang="en">EN</button>
+                            <button class="lang-btn px-3 py-1 rounded-full" data-lang="ar">AR</button>
+                        </div>
+                    </div>
+                </div>
+                <nav class="flex justify-center border-b border-gray-200">
+                    <div id="main-nav" class="flex space-x-4 sm:space-x-8 -mb-px overflow-x-auto">
+                        <a href="#home" class="nav-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-translate="navHome">Accueil</a>
+                        <a href="#explore" class="nav-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-translate="navExplore">Explorer</a>
+                        <a href="#compare" class="nav-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-translate="navCompare">Comparer</a>
+                        <a href="#scholarships" class="nav-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-translate="navScholarships">Bourses</a>
+                        <a href="#careers" class="nav-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-translate="navCareers">Carrières</a>
+                        <a href="#advice" class="nav-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-translate="navAdvice">Conseils</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            <section id="home" class="page-section space-y-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800" data-translate="homeTitle">Votre Avenir en Études Islamiques Commence Ici</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600" data-translate="homeSubtitle">Ce guide interactif est conçu pour vous aider à naviguer dans le monde des spécialisations en Charia Islamique après le baccalauréat. Explorez les universités, comparez les programmes et trouvez la bourse qui vous convient.</p>
+                <button onclick="document.querySelector('a[href=\'#explore\']').click()" class="bg-[#C0844D] text-white font-bold py-3 px-8 rounded-full hover:bg-[#A97142] transition duration-300" data-translate="homeCTA">Commencer l'Exploration</button>
+            </section>
+
+            <section id="explore" class="page-section space-y-8" style="display:none;">
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800" data-translate="exploreTitle">Explorer les Opportunités par Région</h2>
+                    <p class="mt-2 text-lg text-gray-600" data-translate="exploreSubtitle">Sélectionnez une région puis un pays pour découvrir les institutions proposant des études en Charia.</p>
+                </div>
+                <div id="region-filter" class="flex flex-wrap justify-center gap-2 md:gap-4"></div>
+                <div id="country-filter" class="flex flex-wrap justify-center gap-2 md:gap-3 my-4"></div>
+                <div id="university-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="compare" class="page-section space-y-8" style="display:none;">
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800" data-translate="compareTitle">Comparateur de Programmes</h2>
+                    <p class="mt-2 text-lg text-gray-600" data-translate="compareSubtitle">Cochez les universités dans la section 'Explorer' pour les ajouter ici et comparer leurs offres.</p>
+                </div>
+                <div id="comparison-content" class="space-y-8">
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold mb-4 text-gray-700" data-translate="compareChartTitle">Comparaison des Frais de Scolarité Annuels (USD)</h3>
+                        <div class="chart-container">
+                            <canvas id="feesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+                        <h3 class="text-2xl font-bold mb-4 text-gray-700 p-2" data-translate="compareTableTitle">Tableau Comparatif Détaillé</h3>
+                        <table id="comparison-table" class="w-full text-sm text-left">
+                           <thead>
+                                <tr class="bg-gray-50"></tr>
+                           </thead>
+                           <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="scholarships" class="page-section space-y-8" style="display:none;">
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800" data-translate="scholarshipsTitle">Financer Vos Études</h2>
+                    <p class="mt-2 text-lg text-gray-600" data-translate="scholarshipsSubtitle">Découvrez les principales bourses et aides financières disponibles pour les étudiants internationaux.</p>
+                </div>
+                <div id="scholarship-list" class="space-y-6"></div>
+            </section>
+            
+            <section id="careers" class="page-section space-y-8" style="display:none;">
+                 <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800" data-translate="careersTitle">Perspectives de Carrière Après la Charia</h2>
+                    <p class="mt-2 text-lg text-gray-600" data-translate="careersSubtitle">Un diplôme en Charia ouvre les portes à des carrières traditionnelles et modernes.</p>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div class="border-b border-gray-200">
+                        <nav id="career-tabs" class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button class="career-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg" data-career-type="traditional" data-translate="careersTabTraditional">Carrières Traditionnelles</button>
+                            <button class="career-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg" data-career-type="modern" data-translate="careersTabModern">Secteurs Émergents</button>
+                        </nav>
+                    </div>
+                    <div id="career-content" class="mt-8"></div>
+                </div>
+            </section>
+            
+            <section id="advice" class="page-section space-y-8" style="display:none;">
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800" data-translate="adviceTitle">Conseils pour l'Étudiant International</h2>
+                    <p class="mt-2 text-lg text-gray-600" data-translate="adviceSubtitle">Préparez-vous pour une expérience d'étude à l'étranger réussie.</p>
+                </div>
+                <div id="advice-list" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="university-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white p-4 border-b flex justify-between items-center z-10">
+                <h3 id="modal-title" class="text-2xl font-bold text-gray-800"></h3>
+                <button id="modal-close" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+            </div>
+            <div id="modal-body" class="p-6 md:p-8 space-y-6"></div>
+        </div>
+    </div>
+    
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm">
+            <p data-translate="footerText">Application générée pour visualiser le rapport sur les études en Charia. Toutes les données sont basées sur le document source.</p>
+        </div>
+    </footer>
+
+    <script>
+        const appData = {
+            universities: [
+                { id: "us_ml", name: "Université du Sahel (US)", country: "Mali", region: "Afrique de l'Ouest", fees: 800, lang: ["AR"], details: { program: "Études Islamiques & Langue Arabe (Licence)", duration: "3 ans", admission: "Baccalauréat ou équivalent, dossier.", curriculum: "Études Islamiques, Langue Arabe, Sciences Juridiques, Économiques, Informatique, Éducation, Saint Coran." } },
+                { id: "ufhob_ml", name: "UFHOB-MALI", country: "Mali", region: "Afrique de l'Ouest", fees: 900, lang: ["FR"], details: { program: "Licence (LMD)", duration: "3 ans", admission: "Baccalauréat ou BT2, dossier complet.", curriculum: "Structure académique formalisée suivant le système LMD. Domaines non spécifiés en détail." } },
+                { id: "iheri_ml", name: "IHERI-ABT", country: "Mali", region: "Afrique de l'Ouest", fees: 600, lang: ["AR", "FR"], details: { program: "DUT (Diplôme Universitaire de Technologie)", duration: "2 ans", admission: "Axé sur la formation pratique.", curriculum: "Conservation, numérisation et catalogage de manuscrits arabes. Formation technique spécialisée." } },
+                { id: "esaei_sn", name: "ESAEI", country: "Sénégal", region: "Afrique de l'Ouest", fees: 1200, lang: ["AR", "FR", "EN"], details: { program: "Charia, Langue Arabe, Islam et Civilisation", duration: "Licence (LMD)", admission: "Baccalauréat, pièce d'identité, frais.", curriculum: "Langue Arabe, Religion Musulmane, Civilisation, compétences linguistiques (français/anglais) et informatiques." } },
+                { id: "uin_ne", name: "Université Islamique Au Niger (UIN)", country: "Niger", region: "Afrique de l'Ouest", fees: 500, lang: ["AR", "FR", "EN"], details: { program: "Sciences Islamiques, Droit, Économie, etc.", duration: "Licence (LMD)", admission: "Inscription en ligne, examen d'entrée compétitif.", curriculum: "Approche multidisciplinaire : Sciences Islamiques, Droit, Économie, Technologies. Enseignement trilingue." } },
+                { id: "arrahma_ne", name: "Université Privée Ar-Rahma Maradi", country: "Niger", region: "Afrique de l'Ouest", fees: 700, lang: ["AR", "FR"], details: { program: "Charia et Études Islamiques", duration: "Licence", admission: "Test d'admission.", curriculum: "Fondements de la religion, Jurisprudence et ses fondements, Charia et Droit Positif." } },
+                { id: "iseri_mr", name: "ISERI", country: "Mauritanie", region: "Afrique de l'Ouest", fees: 1000, lang: ["AR"], details: { program: "Études Islamiques", duration: "Niveau supérieur", admission: "Baccalauréat requis.", curriculum: "Approche traditionnelle : Théologie, Jurisprudence Islamique, Langue Arabe, Philosophie Islamique." } },
+                { id: "usia_mr", name: "Université des Sciences Islamiques d'Aïoun (USIA)", country: "Mauritanie", region: "Afrique de l'Ouest", fees: 1000, lang: ["AR"], details: { program: "Charia", duration: "Licence (LMD)", admission: "Baccalauréat requis, admission compétitive.", curriculum: "Spécialisation en Droit Islamique (Charia)." } },
+                { id: "azhar_eg", name: "Université Al-Azhar", country: "Égypte", region: "Moyen-Orient & Afrique du Nord", fees: 4500, lang: ["AR", "EN"], details: { program: "Charia et Droit, Sciences Islamiques", duration: "4-5 ans", admission: "Diplôme secondaire (min 50%), passeport.", curriculum: "Fondements de la religion, Fiqh (4 écoles), Études Coraniques, Hadith, Droit Comparé." } },
+                { id: "iu_medina_sa", name: "Université Islamique de Médine", country: "Arabie Saoudite", region: "Moyen-Orient & Afrique du Nord", fees: 0, lang: ["AR", "EN"], details: { program: "Charia, Coran, Usul al-Din, Hadith", duration: "4 ans", admission: "Diplôme secondaire (<5 ans), âge 17-25, bonne conduite.", curriculum: "Offre des bourses complètes. Cursus axé sur Droit Islamique, Sciences Coraniques, Hadith, Croyance et Da'wa." } },
+                { id: "um_my", name: "Universiti Malaya (UM)", country: "Malaisie", region: "Asie du Sud-Est", fees: 3000, lang: ["EN"], details: { program: "Charia et Droit (combiné)", duration: "4 ans", admission: "Certificat secondaire (min 80%), TOEFL iBT 65.", curriculum: "Programme intégré combinant Droit de la Charia et Droit Civil. Très orienté vers le marché du travail." } },
+                { id: "iium_my", name: "International Islamic University Malaysia (IIUM)", country: "Malaisie", region: "Asie du Sud-Est", fees: 1800, lang: ["EN", "AR"], details: { program: "Droit (Charia) (Honours)", duration: "5 ans", admission: "Équivalent A-levels, TOEFL/IELTS.", curriculum: "Programme complet de 210 crédits couvrant le Droit Civil et la Charia, avec des stages pratiques." } },
+                { id: "ukm_my", name: "Universiti Kebangsaan Malaysia (UKM)", country: "Malaisie", region: "Asie du Sud-Est", fees: 2500, lang: ["EN", "AR", "MS"], details: { program: "Études Islamiques (Charia) (Honours)", duration: "3-4 ans", admission: "Licence en études islamiques (pour Master), IELTS 4.0.", curriculum: "Focus sur la finance islamique : Jurisprudence, Muamalat, Économie Islamique, Gestion de Patrimoine." } },
+                { id: "wise_jo", name: "International Islamic Sciences University (WISE)", country: "Jordanie", region: "Moyen-Orient & Afrique du Nord", fees: 2600, lang: ["AR"], details: { program: "Charia et Études Islamiques, Économie Islamique", duration: "Licence, Master, Doctorat", admission: "Diplôme secondaire jordanien ou équivalent (min 75%).", curriculum: "Fiqh, Études Coraniques, Sunna, Da'wa, Médias Islamiques, Économie et Banque Islamique." } },
+                { id: "qarawiyyin_ma", name: "Université Al-Qarawiyyin", country: "Maroc", region: "Moyen-Orient & Afrique du Nord", fees: 4700, lang: ["AR"], details: { program: "Charia, Droit et Jurisprudence", duration: "3 ans (Licence)", admission: "Baccalauréat.", curriculum: "Héritage historique profond. Cursus axé sur le Droit et la Jurisprudence Islamique." } }
+            ],
+            scholarships: [
+                { provider: "Banque Islamique de Développement (BID)", target: "Pays membres de la BID et communautés musulmanes", eligibility: "Mérite académique, besoin financier, âge <24 (Licence), engagement communautaire.", benefits: "Frais de scolarité, allocation mensuelle, livres, frais médicaux, billets d'avion." },
+                { provider: "Université Islamique de Médine", target: "Étudiants internationaux non-saoudiens", eligibility: "Certificat secondaire (<5 ans), âge 17-25, bonne conduite, recommandation.", benefits: "Bourse entièrement financée (allocation mensuelle, indemnités, manuels, transport, services médicaux)." },
+                { provider: "Université Al-Azhar", target: "Principalement les étudiants africains", eligibility: "Basé sur concours, varie.", benefits: "Petite bourse, logement et couvert." },
+                { provider: "Universités Malaisiennes", target: "Locaux et internationaux", eligibility: "Varie selon l'université et le programme.", benefits: "Frais de scolarité réduits/gratuits, allocation mensuelle, billet d'avion." },
+                { provider: "Chambre Islamique de Commerce et de Développement (ICCD)", target: "Jeunes des pays membres de l'OCI", eligibility: "Varie selon la bourse (âge 17-25 pour Licence).", benefits: "Frais de scolarité, allocation de vie, hébergement, couverture médicale." }
+            ],
+            careers: {
+                traditional: [
+                    { title: "Imam et Leader Religieux", description: "Guider les prières, donner des sermons et offrir des conseils spirituels à la communauté." },
+                    { title: "Enseignant en Sciences Islamiques", description: "Instruire dans les écoles coraniques, les instituts islamiques ou les universités." },
+                    { title: "Chercheur en Études Islamiques", description: "Mener des recherches académiques sur le Coran, le Hadith, le Fiqh et l'histoire islamique." },
+                    { title: "Conseiller Religieux", description: "Fournir des conseils sur des questions de la vie quotidienne basés sur les principes islamiques." }
+                ],
+                modern: [
+                    { title: "Spécialiste en Finance Islamique", description: "Travailler dans les banques et institutions financières islamiques, en assurant la conformité des produits avec la Charia." },
+                    { title: "Avocat en Droit Comparé (Charia & Civil)", description: "Pratiquer le droit dans des systèmes juridiques mixtes, en particulier dans le droit de la famille, des successions et des contrats." },
+                    { title: "Consultant en Affaires Islamiques (ONG/Gouv.)", description: "Conseiller les organisations sur les questions culturelles et religieuses pour des projets de développement ou de diplomatie." },
+                    { title: "Cadre en Conformité Charia (Halal)", description: "Assurer que les produits et services (agroalimentaire, cosmétique, tourisme) respectent les normes islamiques." },
+                    { title: "Journaliste / Spécialiste des Médias", description: "Couvrir les affaires du monde musulman ou produire du contenu pour des audiences musulmanes." },
+                    { title: "Entrepreneur de l'Économie Islamique", description: "Créer des entreprises dans des secteurs conformes à la Charia (mode, technologie, services)." }
+                ]
+            },
+            advice: [
+                { title: "Maîtrise Linguistique", content: "L'arabe est fondamental. Cependant, l'anglais et le français sont souvent cruciaux pour l'admission et, plus important encore, pour les opportunités de carrière après l'obtention du diplôme, en particulier en Afrique de l'Ouest." },
+                { title: "Adaptation Culturelle", content: "Étudier à l'étranger est un défi. Préparez-vous au mal du pays, aux différences culturelles et aux défis logistiques (logement, nourriture). La résilience est une compétence clé." },
+                { title: "Reconnaissance des Diplômes", content: "Vérifiez la reconnaissance internationale du diplôme que vous visez. L'adoption du système LMD par de nombreuses universités est un avantage, mais une vérification auprès des autorités de votre pays d'origine est recommandée." }
+            ]
+        };
+
+        const translations = {
+            fr: {
+                appTitle: "Guide Interactif des Études en Charia",
+                navHome: "Accueil",
+                navExplore: "Explorer",
+                navCompare: "Comparer",
+                navScholarships: "Bourses",
+                navCareers: "Carrières",
+                navAdvice: "Conseils",
+                homeTitle: "Votre Avenir en Études Islamiques Commence Ici",
+                homeSubtitle: "Ce guide interactif est conçu pour vous aider à naviguer dans le monde des spécialisations en Charia Islamique après le baccalauréat. Explorez les universités, comparez les programmes et trouvez la bourse qui vous convient.",
+                homeCTA: "Commencer l'Exploration",
+                exploreTitle: "Explorer les Opportunités par Région",
+                exploreSubtitle: "Sélectionnez une région puis un pays pour découvrir les institutions proposant des études en Charia.",
+                compareTitle: "Comparateur de Programmes",
+                compareSubtitle: "Cochez les universités dans la section 'Explorer' pour les ajouter ici et comparer leurs offres.",
+                compareChartTitle: "Comparaison des Frais de Scolarité Annuels (USD)",
+                compareTableTitle: "Tableau Comparatif Détaillé",
+                scholarshipsTitle: "Financer Vos Études",
+                scholarshipsSubtitle: "Découvrez les principales bourses et aides financières disponibles pour les étudiants internationaux.",
+                careersTitle: "Perspectives de Carrière Après la Charia",
+                careersSubtitle: "Un diplôme en Charia ouvre les portes à des carrières traditionnelles et modernes.",
+                careersTabTraditional: "Carrières Traditionnelles",
+                careersTabModern: "Secteurs Émergents",
+                adviceTitle: "Conseils pour l'Étudiant International",
+                adviceSubtitle: "Préparez-vous pour une expérience d'étude à l'étranger réussie.",
+                footerText: "Application générée pour visualiser le rapport sur les études en Charia. Toutes les données sont basées sur le document source.",
+                modalProgram: "Programme",
+                modalDuration: "Durée",
+                modalAdmission: "Admission",
+                modalCurriculum: "Points Clés du Cursus",
+                modalClose: "Fermer",
+                addToCompare: "Ajouter au comparateur",
+                regionAll: "Toutes les Régions",
+                countryAll: "Tous les Pays",
+            },
+            en: {
+                appTitle: "Interactive Guide to Sharia Studies",
+                navHome: "Home",
+                navExplore: "Explore",
+                navCompare: "Compare",
+                navScholarships: "Scholarships",
+                navCareers: "Careers",
+                navAdvice: "Advice",
+                homeTitle: "Your Future in Islamic Studies Starts Here",
+                homeSubtitle: "This interactive guide is designed to help you navigate the world of post-baccalaureate Islamic Sharia specializations. Explore universities, compare programs, and find the right scholarship for you.",
+                homeCTA: "Start Exploring",
+                exploreTitle: "Explore Opportunities by Region",
+                exploreSubtitle: "Select a region and then a country to discover institutions offering Sharia studies.",
+                compareTitle: "Program Comparator",
+                compareSubtitle: "Check universities in the 'Explore' section to add them here and compare their offerings.",
+                compareChartTitle: "Annual Tuition Fees Comparison (USD)",
+                compareTableTitle: "Detailed Comparison Table",
+                scholarshipsTitle: "Funding Your Studies",
+                scholarshipsSubtitle: "Discover the main scholarships and financial aid available for international students.",
+                careersTitle: "Career Prospects After Sharia",
+                careersSubtitle: "A degree in Sharia opens doors to both traditional and modern careers.",
+                careersTabTraditional: "Traditional Careers",
+                careersTabModern: "Emerging Sectors",
+                adviceTitle: "Advice for International Students",
+                adviceSubtitle: "Prepare yourself for a successful study abroad experience.",
+                footerText: "Application generated to visualize the report on Sharia studies. All data is based on the source document.",
+                modalProgram: "Program",
+                modalDuration: "Duration",
+                modalAdmission: "Admission",
+                modalCurriculum: "Key Curriculum Points",
+                modalClose: "Close",
+                addToCompare: "Add to comparator",
+                regionAll: "All Regions",
+                countryAll: "All Countries",
+            },
+            ar: {
+                appTitle: "الدليل التفاعلي لدراسات الشريعة",
+                navHome: "الرئيسية",
+                navExplore: "استكشاف",
+                navCompare: "مقارنة",
+                navScholarships: "المنح الدراسية",
+                navCareers: "المسارات المهنية",
+                navAdvice: "نصائح",
+                homeTitle: "مستقبلك في الدراسات الإسلامية يبدأ هنا",
+                homeSubtitle: "صُمم هذا الدليل التفاعلي لمساعدتك في استكشاف عالم تخصصات الشريعة الإسلامية بعد البكالوريا. استكشف الجامعات، قارن البرامج، واعثر على المنحة المناسبة لك.",
+                homeCTA: "ابدأ الاستكشاف",
+                exploreTitle: "استكشاف الفرص حسب المنطقة",
+                exploreSubtitle: "اختر منطقة ثم دولة لاكتشاف المؤسسات التي تقدم دراسات الشريعة.",
+                compareTitle: "أداة مقارنة البرامج",
+                compareSubtitle: "حدد الجامعات في قسم 'استكشاف' لإضافتها هنا ومقارنة عروضها.",
+                compareChartTitle: "مقارنة الرسوم الدراسية السنوية (بالدولار الأمريكي)",
+                compareTableTitle: "جدول مقارنة تفصيلي",
+                scholarshipsTitle: "تمويل دراستك",
+                scholarshipsSubtitle: "اكتشف المنح الدراسية والمساعدات المالية الرئيسية المتاحة للطلاب الدوليين.",
+                careersTitle: "الآفاق المهنية بعد دراسة الشريعة",
+                careersSubtitle: "شهادة في الشريعة تفتح الأبواب أمام وظائف تقليدية وحديثة.",
+                careersTabTraditional: "الوظائف التقليدية",
+                careersTabModern: "القطاعات الناشئة",
+                adviceTitle: "نصائح للطالب الدولي",
+                adviceSubtitle: "استعد لتجربة دراسية ناجحة في الخارج.",
+                footerText: "تطبيق تم إنشاؤه لتصور التقرير حول دراسات الشريعة. جميع البيانات مستندة إلى الوثيقة المصدر.",
+                modalProgram: "البرنامج",
+                modalDuration: "المدة",
+                modalAdmission: "القبول",
+                modalCurriculum: "أبرز نقاط المنهج",
+                modalClose: "إغلاق",
+                addToCompare: "أضف للمقارنة",
+                regionAll: "كل المناطق",
+                countryAll: "كل الدول",
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const state = {
+                currentPage: 'home',
+                currentLang: 'fr',
+                comparisonList: new Set(),
+                currentRegion: 'all',
+                currentCountry: 'all',
+            };
+
+            const feesChart = initializeChart();
+            
+            function initializeApp() {
+                setupEventListeners();
+                setLanguage('fr');
+                navigateTo('home');
+                populateRegionFilter();
+            }
+
+            function setupEventListeners() {
+                document.getElementById('language-switcher').addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        setLanguage(e.target.dataset.lang);
+                    }
+                });
+
+                document.getElementById('main-nav').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (e.target.tagName === 'A') {
+                        const page = e.target.hash.substring(1);
+                        navigateTo(page);
+                    }
+                });
+                
+                document.getElementById('region-filter').addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        state.currentRegion = e.target.dataset.region;
+                        state.currentCountry = 'all';
+                        filterUniversities();
+                        updateFilterButtons(document.getElementById('region-filter'), state.currentRegion, 'region');
+                    }
+                });
+                
+                document.getElementById('country-filter').addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        state.currentCountry = e.target.dataset.country;
+                        filterUniversities();
+                        updateFilterButtons(document.getElementById('country-filter'), state.currentCountry, 'country');
+                    }
+                });
+
+                document.getElementById('modal-close').addEventListener('click', closeModal);
+                document.getElementById('university-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'university-modal') closeModal();
+                });
+                
+                document.getElementById('career-tabs').addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        const type = e.target.dataset.careerType;
+                        renderCareerContent(type);
+                    }
+                });
+            }
+
+            function setLanguage(lang) {
+                state.currentLang = lang;
+                const htmlEl = document.documentElement;
+                htmlEl.lang = lang;
+                htmlEl.dir = lang === 'ar' ? 'rtl' : 'ltr';
+                
+                if (lang === 'ar') {
+                    document.body.classList.add('amiri-font');
+                } else {
+                    document.body.classList.remove('amiri-font');
+                }
+
+                document.querySelectorAll('[data-translate]').forEach(el => {
+                    const key = el.dataset.translate;
+                    el.innerHTML = translations[lang][key] || key;
+                });
+                
+                document.querySelectorAll('#language-switcher .lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === lang);
+                });
+                
+                filterUniversities();
+                renderComparison();
+                renderScholarships();
+                renderAdvice();
+                renderCareerContent('traditional');
+                populateRegionFilter();
+                updateChartLabels(feesChart);
+            }
+
+            function navigateTo(pageId) {
+                state.currentPage = pageId;
+                document.querySelectorAll('.page-section').forEach(section => {
+                    section.style.display = section.id === pageId ? 'block' : 'none';
+                });
+                document.querySelectorAll('#main-nav .nav-link').forEach(link => {
+                    link.classList.toggle('active', link.hash === `#${pageId}`);
+                });
+
+                if (pageId === 'explore') filterUniversities();
+                if (pageId === 'compare') renderComparison();
+                if (pageId === 'scholarships') renderScholarships();
+                if (pageId === 'careers') renderCareerContent('traditional');
+                if (pageId === 'advice') renderAdvice();
+            }
+
+            function populateRegionFilter() {
+                const regions = ['all', ...new Set(appData.universities.map(u => u.region))];
+                const filterContainer = document.getElementById('region-filter');
+                filterContainer.innerHTML = regions.map(region => `
+                    <button data-region="${region}" class="px-4 py-2 text-sm font-medium rounded-full transition ${state.currentRegion === region ? 'bg-gray-800 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm'}">
+                        ${getRegionTranslation(region)}
+                    </button>
+                `).join('');
+            }
+            
+            function populateCountryFilter() {
+                 const countries = ['all', ...new Set(
+                    appData.universities
+                        .filter(u => state.currentRegion === 'all' || u.region === state.currentRegion)
+                        .map(u => u.country)
+                )];
+                const filterContainer = document.getElementById('country-filter');
+                filterContainer.innerHTML = countries.map(country => `
+                    <button data-country="${country}" class="px-3 py-1 text-xs font-medium rounded-full transition ${state.currentCountry === country ? 'bg-[#C0844D] text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}">
+                        ${getCountryTranslation(country)}
+                    </button>
+                `).join('');
+            }
+
+            function filterUniversities() {
+                populateCountryFilter();
+                const filtered = appData.universities.filter(u => 
+                    (state.currentRegion === 'all' || u.region === state.currentRegion) &&
+                    (state.currentCountry === 'all' || u.country === state.currentCountry)
+                );
+                renderUniversityList(filtered);
+            }
+            
+             function updateFilterButtons(container, activeValue, type) {
+                container.querySelectorAll('button').forEach(button => {
+                    const value = type === 'region' ? button.dataset.region : button.dataset.country;
+                    const isActive = value === activeValue;
+                    if (type === 'region') {
+                        button.className = `px-4 py-2 text-sm font-medium rounded-full transition ${isActive ? 'bg-gray-800 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm'}`;
+                    } else {
+                         button.className = `px-3 py-1 text-xs font-medium rounded-full transition ${isActive ? 'bg-[#C0844D] text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`;
+                    }
+                });
+            }
+
+            function renderUniversityList(universities) {
+                const listEl = document.getElementById('university-list');
+                if (universities.length === 0) {
+                    listEl.innerHTML = `<p class="text-center col-span-full text-gray-500">Aucune université trouvée pour cette sélection.</p>`;
+                    return;
+                }
+                listEl.innerHTML = universities.map(uni => {
+                    const t = (key) => translations[state.currentLang][key] || key;
+                    const uniTranslations = getUniversityTranslations(uni.id);
+                    
+                    return `
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition duration-300">
+                        <div class="p-5">
+                            <h3 class="text-xl font-bold text-gray-800">${uniTranslations.name}</h3>
+                            <p class="text-sm text-gray-500">${getCountryTranslation(uni.country)}</p>
+                            <div class="flex items-center mt-4 text-xs space-x-2 rtl:space-x-reverse">
+                                ${uni.lang.map(l => `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-semibold">${l}</span>`).join('')}
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full font-semibold">${uni.fees === 0 ? 'Bourse complète' : `$${uni.fees.toLocaleString()}/an`}</span>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
+                            <label class="flex items-center text-sm cursor-pointer">
+                                <input type="checkbox" data-id="${uni.id}" class="compare-checkbox h-4 w-4 text-[#C0844D] border-gray-300 rounded focus:ring-[#C0844D]" ${state.comparisonList.has(uni.id) ? 'checked' : ''}>
+                                <span class="ml-2 rtl:mr-2 text-gray-600">${t('addToCompare')}</span>
+                            </label>
+                            <button class="view-details-btn text-sm font-semibold text-[#C0844D] hover:text-[#A97142]" data-id="${uni.id}">
+                                Voir plus →
+                            </button>
+                        </div>
+                    </div>
+                `}).join('');
+                
+                listEl.querySelectorAll('.compare-checkbox').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const id = e.target.dataset.id;
+                        if (e.target.checked) {
+                            state.comparisonList.add(id);
+                        } else {
+                            state.comparisonList.delete(id);
+                        }
+                    });
+                });
+
+                listEl.querySelectorAll('.view-details-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        openModal(e.target.dataset.id);
+                    });
+                });
+            }
+            
+            function openModal(uniId) {
+                const uni = appData.universities.find(u => u.id === uniId);
+                const uniTranslations = getUniversityTranslations(uni.id);
+                const t = (key) => translations[state.currentLang][key] || key;
+
+                document.getElementById('modal-title').textContent = uniTranslations.name;
+                document.getElementById('modal-body').innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-bold text-gray-600">${t('modalProgram')}</h4>
+                                <p>${uniTranslations.details.program}</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-600">${t('modalDuration')}</h4>
+                                <p>${uniTranslations.details.duration}</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-600">${t('modalAdmission')}</h4>
+                                <p>${uniTranslations.details.admission}</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="font-bold text-gray-600">${t('modalCurriculum')}</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                ${uniTranslations.details.curriculum.split('. ').filter(item => item).map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('university-modal').classList.add('show');
+            }
+
+            function closeModal() {
+                document.getElementById('university-modal').classList.remove('show');
+            }
+            
+            function renderComparison() {
+                const t = (key) => translations[state.currentLang][key] || key;
+                const container = document.getElementById('comparison-content');
+                
+                if (state.comparisonList.size === 0) {
+                    container.innerHTML = `<div class="text-center py-12 bg-white rounded-lg shadow-md"><p class="text-gray-500">${t('compareSubtitle')}</p></div>`;
+                    return;
+                }
+                
+                container.innerHTML = `
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold mb-4 text-gray-700">${t('compareChartTitle')}</h3>
+                        <div class="chart-container">
+                            <canvas id="feesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+                         <h3 class="text-2xl font-bold mb-4 text-gray-700 p-2">${t('compareTableTitle')}</h3>
+                        <table id="comparison-table" class="w-full text-sm text-left">
+                           <thead><tr class="bg-gray-50"></tr></thead>
+                           <tbody></tbody>
+                        </table>
+                    </div>
+                `;
+
+                const tableHead = document.querySelector('#comparison-table thead tr');
+                const tableBody = document.querySelector('#comparison-table tbody');
+                
+                const headers = { 
+                    name: 'Université', 
+                    country: 'Pays', 
+                    duration: t('modalDuration'), 
+                    lang: 'Langues',
+                    fees: 'Frais (USD/an)'
+                };
+                
+                tableHead.innerHTML = `<th class="p-3 font-semibold text-gray-600">Caractéristique</th>` + 
+                    [...state.comparisonList].map(id => {
+                        const uni = appData.universities.find(u => u.id === id);
+                        const uniTranslations = getUniversityTranslations(uni.id);
+                        return `<th class="p-3 font-bold text-gray-800">${uniTranslations.name}</th>`
+                    }).join('');
+
+                tableBody.innerHTML = Object.keys(headers).map(key => {
+                    let row = `<tr class="border-b"><td class="p-3 font-semibold text-gray-700">${headers[key]}</td>`;
+                    [...state.comparisonList].forEach(id => {
+                        const uni = appData.universities.find(u => u.id === id);
+                        const uniTranslations = getUniversityTranslations(uni.id);
+                        let cellData = '';
+                        switch(key) {
+                            case 'name': cellData = uniTranslations.name; break;
+                            case 'country': cellData = getCountryTranslation(uni.country); break;
+                            case 'duration': cellData = uniTranslations.details.duration; break;
+                            case 'lang': cellData = uni.lang.join(', '); break;
+                            case 'fees': cellData = uni.fees === 0 ? t('Bourse complète') || 'Full scholarship' : `$${uni.fees.toLocaleString()}`; break;
+                        }
+                        row += `<td class="p-3">${cellData}</td>`;
+                    });
+                    row += '</tr>';
+                    return row;
+                }).join('');
+
+                const chartData = [...state.comparisonList].map(id => {
+                    const uni = appData.universities.find(u => u.id === id);
+                    const uniTranslations = getUniversityTranslations(uni.id);
+                    return { name: uniTranslations.name, fees: uni.fees };
+                });
+                updateChart(feesChart, chartData);
+            }
+
+            function initializeChart() {
+                const ctx = document.getElementById('feesChart').getContext('2d');
+                return new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: translations[state.currentLang].compareChartTitle,
+                            data: [],
+                            backgroundColor: 'rgba(192, 132, 77, 0.6)',
+                            borderColor: 'rgba(192, 132, 77, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) { return '$' + value; }
+                                }
+                            }
+                        },
+                        plugins: {
+                           legend: { display: false },
+                           tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                           }
+                        }
+                    }
+                });
+            }
+
+            function updateChart(chart, data) {
+                 const newCtx = document.getElementById('feesChart').getContext('2d');
+                 if(chart) chart.destroy();
+                 chart = new Chart(newCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.name.length > 20 ? d.name.substring(0, 18) + '...' : d.name),
+                        datasets: [{
+                            label: translations[state.currentLang].compareChartTitle,
+                            data: data.map(d => d.fees),
+                            backgroundColor: 'rgba(192, 132, 77, 0.6)',
+                            borderColor: 'rgba(192, 132, 77, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, ticks: { callback: function(value) { return '$' + value; } } },
+                            x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } }
+                        },
+                        plugins: {
+                           legend: { display: false },
+                           tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                           }
+                        }
+                    }
+                 });
+            }
+            
+            function updateChartLabels(chart) {
+                if (!chart || !chart.options) return;
+                const t = (key) => translations[state.currentLang][key] || key;
+                chart.data.datasets[0].label = t('compareChartTitle');
+                chart.update();
+            }
+
+            function renderScholarships() {
+                const listEl = document.getElementById('scholarship-list');
+                listEl.innerHTML = appData.scholarships.map(s => {
+                    const translations = getScholarshipTranslations(s.provider);
+                    return `
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-bold text-[#C0844D]">${translations.provider}</h3>
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div><strong class="text-gray-600 block">Cible:</strong> ${translations.target}</div>
+                            <div><strong class="text-gray-600 block">Éligibilité:</strong> ${translations.eligibility}</div>
+                            <div><strong class="text-gray-600 block">Avantages:</strong> ${translations.benefits}</div>
+                        </div>
+                    </div>
+                `}).join('');
+            }
+            
+            function renderCareerContent(type) {
+                document.querySelectorAll('.career-tab').forEach(tab => {
+                    tab.classList.toggle('text-[#C0844D]', tab.dataset.careerType === type);
+                    tab.classList.toggle('border-[#C0844D]', tab.dataset.careerType === type);
+                    tab.classList.toggle('text-gray-500', tab.dataset.careerType !== type);
+                    tab.classList.toggle('border-transparent', tab.dataset.careerType !== type);
+                });
+                
+                const contentEl = document.getElementById('career-content');
+                const careersData = appData.careers[type];
+                contentEl.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        ${careersData.map(c => {
+                             const careerTranslations = getCareerTranslations(type, c.title);
+                             return `
+                                <div class="bg-white p-5 rounded-lg shadow">
+                                    <h4 class="font-bold text-lg text-gray-800">${careerTranslations.title}</h4>
+                                    <p class="text-gray-600 mt-1">${careerTranslations.description}</p>
+                                </div>`
+                            }).join('')
+                        }
+                    </div>
+                `;
+            }
+            
+            function renderAdvice() {
+                const listEl = document.getElementById('advice-list');
+                const t = getAdviceTranslations();
+                listEl.innerHTML = t.map(a => `
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-gray-800">${a.title}</h3>
+                        <p class="mt-2 text-gray-600">${a.content}</p>
+                    </div>
+                `).join('');
+            }
+
+            function getUniversityTranslations(uniId) {
+                const uni = appData.universities.find(u => u.id === uniId);
+                const base = {
+                    name: uni.name,
+                    details: {
+                        program: uni.details.program,
+                        duration: uni.details.duration,
+                        admission: uni.details.admission,
+                        curriculum: uni.details.curriculum,
+                    }
+                };
+
+                if (state.currentLang === 'en') {
+                    base.name = {
+                        "us_ml": "Sahel University (US)", "ufhob_ml": "UFHOB-MALI", "iheri_ml": "Ahmed Baba Institute (IHERI-ABT)", "esaei_sn": "ESAEI Senegal",
+                        "uin_ne": "Islamic University in Niger (UIN)", "arrahma_ne": "Ar-Rahma Private University", "iseri_mr": "Higher Institute for Islamic Studies (ISERI)", "usia_mr": "Islamic Sciences University of Aïoun (USIA)",
+                        "azhar_eg": "Al-Azhar University", "iu_medina_sa": "Islamic University of Madinah", "um_my": "Universiti Malaya (UM)", "iium_my": "International Islamic University Malaysia (IIUM)",
+                        "ukm_my": "Universiti Kebangsaan Malaysia (UKM)", "wise_jo": "World Islamic Sciences & Education University (WISE)", "qarawiyyin_ma": "Al-Qarawiyyin University"
+                    }[uniId] || uni.name;
+                    base.details = {
+                        program: { "us_ml": "Islamic Studies & Arabic Language (Bachelor's)" }[uniId] || uni.details.program,
+                        duration: uni.details.duration,
+                        admission: { "us_ml": "Baccalaureate or equivalent, application file." }[uniId] || uni.details.admission,
+                        curriculum: { "us_ml": "Islamic Studies, Arabic, Law, Economics, IT, Education, Holy Quran." }[uniId] || uni.details.curriculum
+                    };
+                } else if (state.currentLang === 'ar') {
+                    base.name = {
+                        "us_ml": "جامعة الساحل", "ufhob_ml": "UFHOB-MALI", "iheri_ml": "معهد أحمد بابا للدراسات والبحوث الإسلامية", "esaei_sn": "المدرسة العليا الأفريقية للدراسات الإسلامية",
+                        "uin_ne": "الجامعة الإسلامية بالنيجر", "arrahma_ne": "جامعة الرحمة الخاصة بمرادي", "iseri_mr": "المعهد العالي للدراسات والبحوث الإسلامية", "usia_mr": "جامعة العلوم الإسلامية بالعيون",
+                        "azhar_eg": "جامعة الأزهر", "iu_medina_sa": "الجامعة الإسلامية بالمدينة المنورة", "um_my": "جامعة مالايا", "iium_my": "الجامعة الإسلامية العالمية بماليزيا",
+                        "ukm_my": "جامعة كيبانغسان ماليزيا", "wise_jo": "جامعة العلوم الإسلامية العالمية", "qarawiyyin_ma": "جامعة القرويين"
+                    }[uniId] || uni.name;
+                     base.details = {
+                        program: { "us_ml": "دراسات إسلامية ولغة عربية (ليسانس)" }[uniId] || uni.details.program,
+                        duration: uni.details.duration.replace('ans', 'سنوات'),
+                        admission: { "us_ml": "بكالوريا أو ما يعادلها، ملف التقديم." }[uniId] || uni.details.admission,
+                        curriculum: { "us_ml": "دراسات إسلامية، لغة عربية، علوم قانونية واقتصادية، حاسوب، تربية، قرآن كريم." }[uniId] || uni.details.curriculum
+                    };
+                }
+                return base;
+            }
+
+            function getCountryTranslation(country) {
+                const map = {
+                    fr: { 'Mali': 'Mali', 'Sénégal': 'Sénégal', 'Niger': 'Niger', 'Mauritanie': 'Mauritanie', 'Égypte': 'Égypte', 'Arabie Saoudite': 'Arabie Saoudite', 'Malaisie': 'Malaisie', 'Jordanie': 'Jordanie', 'Maroc': 'Maroc', 'all': 'Tous les Pays'},
+                    en: { 'Mali': 'Mali', 'Sénégal': 'Senegal', 'Niger': 'Niger', 'Mauritanie': 'Mauritania', 'Égypte': 'Egypt', 'Arabie Saoudite': 'Saudi Arabia', 'Malaisie': 'Malaysia', 'Jordanie': 'Jordan', 'Maroc': 'Morocco', 'all': 'All Countries'},
+                    ar: { 'Mali': 'مالي', 'Sénégal': 'السنغال', 'Niger': 'النيجر', 'Mauritanie': 'موريتانيا', 'Égypte': 'مصر', 'Arabie Saoudite': 'المملكة العربية السعودية', 'Malaisie': 'ماليزيا', 'Jordanie': 'الأردن', 'Maroc': 'المغرب', 'all': 'كل الدول' }
+                };
+                return map[state.currentLang][country] || country;
+            }
+            
+             function getRegionTranslation(region) {
+                const map = {
+                    fr: { "Afrique de l'Ouest": "Afrique de l'Ouest", 'Moyen-Orient & Afrique du Nord': 'Moyen-Orient & Afrique du Nord', 'Asie du Sud-Est': 'Asie du Sud-Est', 'all': 'Toutes les Régions'},
+                    en: { "Afrique de l'Oues": 'West Africa', 'Moyen-Orient & Afrique du Nord': 'Middle East & North Africa', 'Asie du Sud-Est': 'Southeast Asia', 'all': 'All Regions' },
+                    ar: { "Afrique de l'Ouest": 'غرب أفريقيا', 'Moyen-Orient & Afrique du Nord': 'الشرق الأوسط وشمال أفريقيا', 'Asie du Sud-Est': 'جنوب شرق آسيا', 'all': 'كل المناطق' }
+                };
+                return map[state.currentLang][region] || region;
+            }
+
+            function getScholarshipTranslations(provider) {
+                const base = appData.scholarships.find(s => s.provider === provider);
+                if (state.currentLang === 'en') {
+                    return { provider: provider, target: "IsDB Member Countries & Muslim communities", eligibility: "Academic merit, financial need, age <24 (Bachelor's), community commitment.", benefits: "Tuition fees, monthly stipend, books, medical, airfare." };
+                }
+                if (state.currentLang === 'ar') {
+                    return { provider: 'البنك الإسلامي للتنمية', target: "الدول الأعضاء والمجتمعات المسلمة", eligibility: "تفوق أكاديمي، حاجة مالية، عمر <24، التزام مجتمعي.", benefits: "رسوم دراسية، راتب شهري، كتب، رعاية صحية، تذاكر طيران." };
+                }
+                return base;
+            }
+            
+            function getCareerTranslations(type, title) {
+                const base = appData.careers[type].find(c => c.title === title);
+                 if (state.currentLang === 'en') {
+                    const map = {
+                        traditional: { 'Imam et Leader Religieux': {title: 'Imam and Religious Leader', description: 'Lead prayers, give sermons, and provide spiritual guidance to the community.'}},
+                        modern: {'Spécialiste en Finance Islamique': {title: 'Islamic Finance Specialist', description: 'Work in Islamic banks and financial institutions, ensuring Sharia compliance of products.'}}
+                    };
+                    return map[type][title] || base;
+                }
+                 if (state.currentLang === 'ar') {
+                    const map = {
+                        traditional: { 'Imam et Leader Religieux': {title: 'إمام وقائد ديني', description: 'إمامة الصلاة، إلقاء الخطب، وتقديم الإرشاد الروحي للمجتمع.'}},
+                        modern: {'Spécialiste en Finance Islamique': {title: 'متخصص في التمويل الإسلامي', description: 'العمل في البنوك والمؤسسات المالية الإسلامية، وضمان توافق المنتجات مع الشريعة.'}}
+                    };
+                    return map[type][title] || base;
+                }
+                return base;
+            }
+            
+            function getAdviceTranslations() {
+                if (state.currentLang === 'en') {
+                    return [
+                        { title: "Language Proficiency", content: "Arabic is fundamental. However, English and French are often crucial for admission and, more importantly, for career opportunities after graduation, especially in West Africa." },
+                        { title: "Cultural Adaptation", content: "Studying abroad is challenging. Be prepared for homesickness, cultural differences, and logistical challenges (housing, food). Resilience is a key skill." },
+                        { title: "Degree Recognition", content: "Verify the international recognition of your target degree. The adoption of the LMD system is an advantage, but checking with authorities in your home country is recommended." }
+                    ];
+                }
+                if (state.currentLang === 'ar') {
+                    return [
+                        { title: "الإتقان اللغوي", content: "اللغة العربية أساسية. ومع ذلك، غالبًا ما تكون الإنجليزية والفرنسية حاسمة للقبول، والأهم من ذلك، للفرص الوظيفية بعد التخرج، خاصة في غرب إفريقيا." },
+                        { title: "التكيف الثقافي", content: "الدراسة في الخارج تمثل تحديًا. استعد للحنين إلى الوطن، والاختلافات الثقافية، والتحديات اللوجستية (السكن، الطعام). المرونة مهارة أساسية." },
+                        { title: "الاعتراف بالشهادات", content: "تحقق من الاعتراف الدولي بالشهادة التي تستهدفها. يعد اعتماد نظام LMD ميزة، ولكن يوصى بالتحقق من السلطات في بلدك الأم." }
+                    ];
+                }
+                return appData.advice;
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

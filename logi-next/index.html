@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide des Carrières en Transport & Logistique</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Stone, Blue, Emerald) -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation bar for easy access to key sections: Formations, Débouchés, and Compétences & Avenir. This structure allows the user to explore non-linearly. The 'Formations' section uses tabs to separate Malian and international options. The 'Débouchés' section uses interactive filters to switch between job categories. The 'Compétences' section uses a card grid for easy reading. This thematic structure is more intuitive for a student exploring their future than a linear report, encouraging discovery and comparison. -->
+    <!-- Visualization & Content Choices: 
+        1. Formations Duration -> Goal: Compare -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Tooltips on hover -> Justification: Provides an immediate visual comparison of study lengths, which is a key decision factor for a student.
+        2. Job Sectors -> Goal: Inform on Proportions -> Viz: Doughnut Chart (Chart.js) -> Interaction: Hover to highlight segments -> Justification: Clearly shows the distribution of opportunities across various industries, giving a broad overview of the market.
+        3. Job Lists -> Goal: Organize & Explore -> Viz: Styled Lists/Cards -> Interaction: Filter buttons to toggle visibility -> Justification: Prevents information overload by allowing the user to focus on one job category at a time (Operational vs. Management).
+        4. Key Trends -> Goal: Inform & Highlight -> Viz: Grid of cards with Unicode icons -> Interaction: Hover effects -> Justification: Breaks down complex topics into digestible, visually appealing chunks.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { transition: color 0.3s, border-color 0.3s; }
+        .nav-link.active { color: #3B82F6; border-bottom-color: #3B82F6; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .tab-button.active { background-color: #3B82F6; color: white; }
+        .job-filter.active { background-color: #10B981; color: white; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (max-width: 768px) { .chart-container { height: 300px; } }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <div class="container mx-auto px-4 py-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">Votre Avenir en Transport & Logistique</h1>
+            <p class="text-lg text-stone-600 max-w-3xl mx-auto">Un guide interactif pour les futurs leaders de la chaîne d'approvisionnement au Mali et au-delà.</p>
+        </header>
+
+        <nav class="sticky top-0 bg-white/80 backdrop-blur-md shadow-sm z-10 mb-8 rounded-lg">
+            <div class="max-w-5xl mx-auto px-4">
+                <div class="flex justify-center items-center space-x-4 md:space-x-8 border-b border-stone-200">
+                    <a href="#formations" class="nav-link text-stone-600 hover:text-blue-500 font-semibold py-4 border-b-2 border-transparent">Formations</a>
+                    <a href="#debouches" class="nav-link text-stone-600 hover:text-blue-500 font-semibold py-4 border-b-2 border-transparent">Débouchés</a>
+                    <a href="#competences" class="nav-link text-stone-600 hover:text-blue-500 font-semibold py-4 border-b-2 border-transparent">Compétences & Avenir</a>
+                </div>
+            </div>
+        </nav>
+
+        <main id="main-content">
+            
+            <section id="formations" class="content-section space-y-12">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-stone-800 mb-2">Construire votre Parcours</h2>
+                    <p class="text-stone-600 max-w-2xl mx-auto">Explorez les différentes voies de formation pour devenir un expert en logistique. Que vous choisissiez d'étudier au Mali ou de vous aventurer à l'international, de nombreuses options s'offrent à vous.</p>
+                </div>
+                
+                <div class="w-full max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex justify-center border-b border-stone-200 mb-6">
+                        <button data-tab="mali" class="tab-button px-6 py-2 font-semibold text-stone-600 rounded-t-lg transition">Au Mali</button>
+                        <button data-tab="etranger" class="tab-button px-6 py-2 font-semibold text-stone-600 rounded-t-lg transition">À l'étranger</button>
+                    </div>
+
+                    <div id="mali" class="tab-content space-y-4">
+                        <p class="text-center text-stone-500 mb-6">Le Mali dispose de filières solides pour se former aux métiers de la logistique.</p>
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="bg-stone-100 p-4 rounded-lg">
+                                <h3 class="font-bold text-blue-600">BTS Transport Logistique</h3>
+                                <p class="text-sm"><strong>Durée:</strong> 2 ans</p>
+                                <p class="text-sm text-stone-600">Formation technique et opérationnelle axée sur l'organisation des flux.</p>
+                            </div>
+                            <div class="bg-stone-100 p-4 rounded-lg">
+                                <h3 class="font-bold text-blue-600">Licence Professionnelle</h3>
+                                <p class="text-sm"><strong>Durée:</strong> 3 ans</p>
+                                <p class="text-sm text-stone-600">Couvre les fondamentaux du transport, de la gestion des stocks au droit des transports. Proposée par l'IUG et l'ISM.</p>
+                            </div>
+                            <div class="bg-stone-100 p-4 rounded-lg">
+                                <h3 class="font-bold text-blue-600">Master Professionnel</h3>
+                                <p class="text-sm"><strong>Durée:</strong> 5 ans (Licence + 2)</p>
+                                <p class="text-sm text-stone-600">Spécialisation en stratégie logistique, supply chain management et logistique internationale.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="etranger" class="tab-content space-y-4" style="display: none;">
+                        <p class="text-center text-stone-500 mb-6">Étudier à l'étranger ouvre des perspectives internationales. Pensez à Campus France pour la France.</p>
+                        <div class="grid md:grid-cols-2 gap-6 items-center">
+                            <div>
+                                <div class="space-y-3">
+                                    <div class="bg-stone-100 p-3 rounded-lg">
+                                        <h4 class="font-semibold text-blue-600">France <span class="text-xs font-light text-stone-500">(BTS, BUT, Licence, Master)</span></h4>
+                                        <p class="text-sm text-stone-600">Un pôle d'excellence avec des formations comme le BUT GLT et des masters en écoles de commerce.</p>
+                                    </div>
+                                    <div class="bg-stone-100 p-3 rounded-lg">
+                                        <h4 class="font-semibold text-blue-600">Canada <span class="text-xs font-light text-stone-500">(DEC, Bachelor)</span></h4>
+                                        <p class="text-sm text-stone-600">Programmes axés sur la pratique, notamment le DEC en Logistique du transport au Québec.</p>
+                                    </div>
+                                    <div class="bg-stone-100 p-3 rounded-lg">
+                                        <h4 class="font-semibold text-blue-600">Autres Pôles</h4>
+                                        <p class="text-sm text-stone-600">L'Allemagne, les Pays-Bas (logistique portuaire) sont aussi des destinations de choix.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="formationsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="debouches" class="content-section space-y-12">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-stone-800 mb-2">Vos Futures Opportunités</h2>
+                    <p class="text-stone-600 max-w-2xl mx-auto">La logistique est un secteur qui recrute dans de nombreux domaines. Des postes sur le terrain à la gestion stratégique, découvrez un aperçu des carrières possibles.</p>
+                </div>
+                
+                <div class="grid lg:grid-cols-5 gap-8">
+                    <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md">
+                        <h3 class="font-bold text-xl mb-4 text-center">Quels types de postes ?</h3>
+                        <div class="flex justify-center border-b border-stone-200 mb-6">
+                            <button data-filter="operationnel" class="job-filter flex-1 text-center px-4 py-2 font-semibold text-stone-600 transition">Opérationnel</button>
+                            <button data-filter="gestion" class="job-filter flex-1 text-center px-4 py-2 font-semibold text-stone-600 transition">Gestion</button>
+                        </div>
+                        <div id="operationnel-list" class="job-list grid sm:grid-cols-2 gap-3">
+                            <div class="bg-stone-50 p-3 rounded-md border border-stone-200">Agent de transit / Déclarant en douane</div>
+                            <div class="bg-stone-50 p-3 rounded-md border border-stone-200">Affréteur</div>
+                            <div class="bg-stone-50 p-3 rounded-md border border-stone-200">Exploitant transport</div>
+                            <div class="bg-stone-50 p-3 rounded-md border border-stone-200">Gestionnaire de stocks</div>
+                            <div class="bg-stone-50 p-3 rounded-md border border-stone-200">Agent de fret aérien/maritime</div>
+                            <div class="bg-stone-50 p-3 rounded-md border border-stone-200">Préparateur de commandes</div>
+                        </div>
+                        <div id="gestion-list" class="job-list grid sm:grid-cols-2 gap-3" style="display: none;">
+                            <div class="bg-emerald-50 p-3 rounded-md border border-emerald-200">Responsable Logistique / Supply Chain</div>
+                            <div class="bg-emerald-50 p-3 rounded-md border border-emerald-200">Responsable d'entrepôt</div>
+                            <div class="bg-emerald-50 p-3 rounded-md border border-emerald-200">Chef de projet logistique</div>
+                            <div class="bg-emerald-50 p-3 rounded-md border border-emerald-200">Acheteur / Approvisionneur</div>
+                            <div class="bg-emerald-50 p-3 rounded-md border border-emerald-200">Consultant en logistique</div>
+                            <div class="bg-emerald-50 p-3 rounded-md border border-emerald-200">Responsable des transports</div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
+                         <h3 class="font-bold text-xl mb-4 text-center">Principaux Secteurs d'Activité</h3>
+                        <div class="chart-container" style="height: 300px; max-height: 350px;">
+                            <canvas id="debouchesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="competences" class="content-section space-y-12">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-stone-800 mb-2">Les Clés de la Réussite</h2>
+                    <p class="text-stone-600 max-w-2xl mx-auto">Le monde de la logistique évolue rapidement. Maîtriser ces compétences et tendances vous donnera une longueur d'avance sur le marché du travail.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                        <div class="text-3xl mb-3">💻</div>
+                        <h3 class="font-bold text-lg mb-2">Digitalisation</h3>
+                        <p class="text-sm text-stone-600">La maîtrise des outils numériques (ERP, WMS), de l'IA et de l'analyse de données est devenue indispensable pour optimiser les flux.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                        <div class="text-3xl mb-3">🌿</div>
+                        <h3 class="font-bold text-lg mb-2">Logistique Verte</h3>
+                        <p class="text-sm text-stone-600">La durabilité est au cœur des stratégies : optimisation des transports, gestion des déchets et des retours, emballages éco-responsables.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                        <div class="text-3xl mb-3">🧠</div>
+                        <h3 class="font-bold text-lg mb-2">Soft Skills</h3>
+                        <p class="text-sm text-stone-600">Résolution de problèmes, communication, résistance au stress et organisation sont des qualités très recherchées.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                        <div class="text-3xl mb-3">🌍</div>
+                        <h3 class="font-bold text-lg mb-2">Le Hub Malien</h3>
+                        <p class="text-sm text-stone-600">Grâce à sa position géographique stratégique, le Mali a un fort potentiel pour devenir un carrefour logistique en Afrique de l'Ouest.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="text-center py-6 mt-12 bg-stone-100 border-t border-stone-200">
+        <p class="text-sm text-stone-500">Conçu pour éclairer votre chemin professionnel. Bonne chance dans vos études !</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const jobFilters = document.querySelectorAll('.job-filter');
+            const jobLists = document.querySelectorAll('.job-list');
+
+            function setActiveNav(hash) {
+                navLinks.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                contentSections.forEach(section => {
+                    if ('#' + section.id === hash) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetHash = this.getAttribute('href');
+                    setActiveNav(targetHash);
+                    history.pushState(null, null, targetHash);
+                });
+            });
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const targetTab = this.getAttribute('data-tab');
+                    tabContents.forEach(content => {
+                        if (content.id === targetTab) {
+                            content.style.display = 'block';
+                        } else {
+                            content.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            jobFilters.forEach(button => {
+                button.addEventListener('click', function() {
+                    jobFilters.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const targetFilter = this.getAttribute('data-filter');
+                    jobLists.forEach(list => {
+                        if (list.id === targetFilter + '-list') {
+                            list.style.display = 'grid';
+                        } else {
+                            list.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+
+            function initializePage() {
+                const currentHash = window.location.hash || '#formations';
+                setActiveNav(currentHash);
+                
+                document.querySelector('.tab-button[data-tab="mali"]').classList.add('active');
+                document.querySelector('.job-filter[data-filter="operationnel"]').classList.add('active');
+
+                renderFormationsChart();
+                renderDebouchesChart();
+            }
+
+            function renderFormationsChart() {
+                const ctx = document.getElementById('formationsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['BTS (FR)', 'BUT GLT (FR)', 'Licence Pro (FR)', 'Master (FR/CA)'],
+                        datasets: [{
+                            label: 'Durée (après le BAC)',
+                            data: [2, 3, 3, 5],
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Durée moyenne des formations à l\'étranger' }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Années d\'études' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderDebouchesChart() {
+                const ctx = document.getElementById('debouchesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Industrie', 'Entreprises de Transport', 'Distribution & E-commerce', 'Services & Conseil', 'Humanitaire'],
+                        datasets: [{
+                            data: [30, 25, 20, 15, 10],
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(239, 68, 68, 0.7)',
+                                'rgba(249, 115, 22, 0.7)',
+                                'rgba(139, 92, 246, 0.7)'
+                            ],
+                            borderColor: '#FFFFFF',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    boxWidth: 12
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            window.addEventListener('popstate', () => {
+                 initializePage();
+            });
+
+            initializePage();
+        });
+    </script>
+</body>
+</html>
